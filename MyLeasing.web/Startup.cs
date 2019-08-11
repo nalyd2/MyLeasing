@@ -37,7 +37,9 @@ namespace MyLeasing.web
             {
                 cfg.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
+            //inyeccion del SeeDb que alimentara la base de datos con información.
 
+            services.AddTransient<SeeDb>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
