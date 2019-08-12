@@ -3,139 +3,174 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using MyLeasing.web.Data.Entities;
+using MyLeasing.web.Helpers;
 
 namespace MyLeasing.web.Data
 {
     public class SeeDb
     {
-        //inyectamos la conexion de la base de datos cuando istancemnos la clase
-        //context traera la conexion de la base de datos
-        // we inject the database connection when we instantie the class
+            //inyectamos la conexion de la base de datos cuando istancemnos la clase
+            //context traera la conexion de la base de datos
+            // we inject the database connection when we instantie the class
 
-        private readonly DataContext _context;
-        public SeeDb(DataContext context)
-        {
-            _context = context;
+            private readonly DataContext _context;
+            private readonly IUserHelper _userHelper;
 
-         }
-
-        public async Task SeedAsync()
-        {
-            //verificamos que la base de datos este creada
-            // verify that the database is created
-            await _context.Database.EnsureCreatedAsync();
-            await CheckPropertyTypesAsync();
-            await CheckOwnersAsync();
-            await CheckLeasseesAsync();
-            await CheckPropertiesAsync();
-        }
-
-
-        private void AddProperty(string address,
-            string neighborhood,
-            Owner owner,
-            PropertyType propertyType,
-            decimal price,
-            int rooms,
-            int squareMeters,
-            int stratum) => _context.Properties.Add(new Property
+            public SeeDb(
+                DataContext context,
+                IUserHelper userHelper)
             {
-                Address = address,
-                HasParkingLot = true,
-                IsAvailable = true,
-                Neighborhood = neighborhood,
-                Owner = owner,
-                Price = price,
-                PropertyType = propertyType,
-                Rooms = rooms,
-                SquareMeters = squareMeters,
-                Stratum = stratum
-            });
-
-        private async Task CheckLeasseesAsync()
-        {
-            if (!_context.Lessees.Any())
-            {
-                AddLessee("876543", "Ramon", "Gamboa", "234 3232", "310 322 3221", "Calle Luna Calle Sol");
-                AddLessee("654565", "Julian", "Martinez", "343 3226", "300 322 3221", "Calle 77 #22 21");
-                AddLessee("214231", "Carmenza", "Ruis", "450 4332", "350 322 3221", "Carrera 56 #22 21");
-                await _context.SaveChangesAsync();
-
+                _context = context;
+                _userHelper = userHelper;
             }
-        }
 
-        private void AddLessee(string document, string firtsName, string lastName, string fixedPhone, string cellPhone,
-            string address)
-        {
-            _context.Lessees.Add(new Lessee
+            public async Task SeedAsync()
             {
-                Address = address,
-                CellPhone = cellPhone,
-                Document = document,
-                FirstName = firtsName,
-                LastName = lastName,
-                FixedPhone = fixedPhone
-
-              
-            });
-        }
-
-        private async Task CheckOwnersAsync()
-        {
-            if (!_context.Owners.Any())
-            {
-                AddOwner("8989898", "Juan", "Zuluaga", "234 3232", "310 322 3221", "Calle Luna Calle Sol");
-                AddOwner("7655544", "Jose", "Cardona", "343 3226", "300 322 3221", "Calle 77 #22 21");
-                AddOwner("6565555", "Maria", "López", "450 4332", "350 322 3221", "Carrera 56 #22 21");
-                await _context.SaveChangesAsync();
+                await _context.Database.EnsureCreatedAsync();
+                await CheckRoles();
+                var manager = await CheckUserAsync("1010", "Efrain", "Robles", "efrain.252.robles@gmail.com", "350 634 2747", "Calle Luna Calle Sol", "Manager");
+                var owner = await CheckUserAsync("2020", "Efrain", "Robles", "jazer_252_@hotmail.com", "350 634 2747", "Calle Luna Calle Sol", "Owner");
+                var lessee = await CheckUserAsync("3030", "Efrain", "Robles", "carlos.zuluaga@globant.com", "350 634 2747", "Calle Luna Calle Sol", "Lessee");
+                await CheckPropertyTypesAsync();
+                await CheckManagerAsync(manager);
+                await CheckOwnersAsync(owner);
+                await CheckLesseesAsync(lessee);
+                await CheckPropertiesAsync();
+                await CheckContractsAsync();
             }
-           
-        }
 
-        private void AddOwner(string document,
-            string firstName,
-            string lastName,
-            string fixedPhone,
-            string cellPhone,
-            string address)
-        { 
-        
-            _context.Owners.Add(new Owner
+            private async Task CheckContractsAsync()
             {
-                Adress = address,
-                CellPhone = cellPhone,
-                FirstName = firstName,
-                LastName = lastName,
-                FixedPhone = fixedPhone,
-                Document = document
-            });
-         }
+                var owner = _context.Owners.FirstOrDefault();
+                var lessee = _context.Lessees.FirstOrDefault();
+                var property = _context.Properties.FirstOrDefault();
+                if (!_context.Contracts.Any())
+                {
+                    _context.Contracts.Add(new Contract
+                    {
+                        StartDate = DateTime.Today,
+                        EndDate = DateTime.Today.AddYears(1),
+                        IsActive = true,
+                        Lessee = lessee,
+                        Owner = owner,
+                        Price = 800000M,
+                        Property = property,
+                        Remarks = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris nec iaculis ex. Nullam gravida nunc eleifend, placerat tellus a, eleifend metus. Phasellus id suscipit magna. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nullam volutpat ultrices ex, sed cursus sem tincidunt ut. Nullam metus lorem, convallis quis dignissim quis, porttitor quis leo. In hac habitasse platea dictumst. Duis pharetra sed arcu ac viverra. Proin dapibus lobortis commodo. Vivamus non commodo est, ac vehicula augue. Nam enim felis, rutrum in tortor sit amet, efficitur hendrerit augue. Cras pellentesque nisl eu maximus tempor. Curabitur eu efficitur metus. Sed ultricies urna et auctor commodo."
+                    });
 
-        private async Task CheckPropertyTypesAsync()
-        {
-            if (!_context.PropertyTypes.Any())
-            {
-                _context.PropertyTypes.Add(new Entities.PropertyType { Name = "Apartamento" });
-                _context.PropertyTypes.Add(new Entities.PropertyType { Name = "Casa" });
-                _context.PropertyTypes.Add(new Entities.PropertyType { Name = "Negocio " });
-                //Save properties whitout exist.
-                await _context.SaveChangesAsync();
-
+                    await _context.SaveChangesAsync();
+                }
             }
-        
-        }
-        private async Task CheckPropertiesAsync()
-        {
-            var owner = _context.Owners.FirstOrDefault();
-            var propertyType = _context.PropertyTypes.FirstOrDefault();
-            if (!_context.Properties.Any())
+
+            private async Task CheckManagerAsync(User user)
             {
-                AddProperty("Calle 43 #23 32", "Poblado", owner, propertyType, 800000M, 2, 72, 4);
-                AddProperty("Calle 12 Sur #2 34", "Envigado", owner, propertyType, 950000M, 3, 81, 3);
-                await _context.SaveChangesAsync();
+                if (!_context.Managers.Any())
+                {
+                    _context.Managers.Add(new Manager { User = user });
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            private async Task<User> CheckUserAsync(string document,
+                string firstName,
+                string lastName,
+                string email,
+                string phone, string address, string role)
+            {
+                var user = await _userHelper.GetUserByEmailAsync(email);
+                if (user == null)
+                {
+                    user = new User
+                    {
+                        FirstName = firstName,
+                        LastName = lastName,
+                        Email = email,
+                        UserName = email,
+                        PhoneNumber = phone,
+                        Address = address,
+                        Document = document
+                    };
+
+                    await _userHelper.AddUserAsync(user, "123456");
+                    await _userHelper.AddUserToRoleAsync(user, role);
+                }
+
+                return user;
             }
 
 
-        }
+            private async Task CheckRoles()
+            {
+                await _userHelper.CheckRoleAsync("Manager");
+                await _userHelper.CheckRoleAsync("Owner");
+                await _userHelper.CheckRoleAsync("Lessee");
+            }
+
+            private async Task CheckLesseesAsync(User user)
+            {
+                if (!_context.Lessees.Any())
+                {
+                    _context.Lessees.Add(new Lessee { User = user });
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            private async Task CheckPropertiesAsync()
+            {
+                var owner = _context.Owners.FirstOrDefault();
+                var propertyType = _context.PropertyTypes.FirstOrDefault();
+                if (!_context.Properties.Any())
+                {
+                    AddProperty("Calle 43 #23 32", "Poblado", owner, propertyType, 800000M, 2, 72, 4);
+                    AddProperty("Calle 12 Sur #2 34", "Envigado", owner, propertyType, 950000M, 3, 81, 3);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            private async Task CheckPropertyTypesAsync()
+            {
+                if (!_context.PropertyTypes.Any())
+                {
+                    _context.PropertyTypes.Add(new PropertyType { Name = "Apartamento" });
+                    _context.PropertyTypes.Add(new PropertyType { Name = "Casa" });
+                    _context.PropertyTypes.Add(new PropertyType { Name = "Negocio" });
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            private async Task CheckOwnersAsync(User user)
+            {
+                if (!_context.Owners.Any())
+                {
+                    _context.Owners.Add(new Owner { User = user });
+                    await _context.SaveChangesAsync();
+                }
+
+            }
+
+
+                private void AddProperty(string address,
+                        string neighborhood,
+                        Owner owner,
+                        PropertyType propertyType,
+                        decimal price,
+                        int rooms,
+                        int squareMeters,
+                        int stratum) => _context.Properties.Add(new Property
+                        {
+                            Address = address,
+                            HasParkingLot = true,
+                            IsAvailable = true,
+                            Neighborhood = neighborhood,
+                            Owner = owner,
+                            Price = price,
+                            PropertyType = propertyType,
+                            Rooms = rooms,
+                            SquareMeters = squareMeters,
+                            Stratum = stratum
+                        });
+
+
+
+            }
     }
-}

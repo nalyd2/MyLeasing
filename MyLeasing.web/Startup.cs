@@ -6,11 +6,15 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyLeasing.web.Data;
+using MyLeasing.web.Data.Entities;
+using MyLeasing.web.Helpers;
+using MyLeasing.Web.Helpers;
 
 namespace MyLeasing.web
 {
@@ -32,14 +36,31 @@ namespace MyLeasing.web
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
+            //condiciones para el password de los usuarios.
+            services.AddIdentity<User, IdentityRole>(cfg =>
+            {
+                cfg.User.RequireUniqueEmail = true;
+                cfg.Password.RequireDigit = false;
+                cfg.Password.RequiredUniqueChars = 0;
+                cfg.Password.RequireLowercase = false;
+                cfg.Password.RequireNonAlphanumeric = false;
+                cfg.Password.RequireUppercase = false;
+            }).AddEntityFrameworkStores<DataContext>();
+
 
             services.AddDbContext<DataContext>(cfg =>
             {
                 cfg.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
             //inyeccion del SeeDb que alimentara la base de datos con información.
-
+            // Existen 3 formas de inyectar dependencias AddTrasient solo se ejecuta una sola vez
+            // cuando el proyecto arranca.
+            //AddScoped se ejecuta cada veza que lo necesit ay crea un nuevo objeto.
+            //AddSinglenton se ejecuta una sola vez y crea un objeto que se almacena en memoria y el mismo
+            //es utilizado cada ves que se implemente a diferencia del scoped que crea uno por cada petición.
+            //y ocupa mas memoria.
             services.AddTransient<SeeDb>();
+            services.AddScoped<IUserHelper, UserHelper>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
@@ -60,6 +81,8 @@ namespace MyLeasing.web
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            //Se habilita en el sistema que usa Autentificacion.
+            app.UseAuthentication();
             app.UseCookiePolicy();
 
             app.UseMvc(routes =>
