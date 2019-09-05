@@ -1,0 +1,129 @@
+﻿@model MyLeasing.web.Data.Entities.Owner
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2>Owner</h2>
+
+
+<h4>Details</h4>
+<hr />
+
+<div class="row">
+    <div class="col-md-4">
+        <form class="form">
+            <div class="form-group">
+                <label asp-for="@Model.User.Document" class="control-label"></label>
+                <input asp-for="@Model.User.Document" readonly class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="@Model.User.FirstName" class="control-label"></label>
+                <input asp-for="@Model.User.FirstName" readonly class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="@Model.User.LastName" class="control-label"></label>
+                <input asp-for="@Model.User.LastName" readonly class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="@Model.User.Email" class="control-label"></label>
+                <input asp-for="@Model.User.Email" readonly class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="@Model.User.Address" class="control-label"></label>
+                <input asp-for="@Model.User.Address" readonly class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="@Model.User.PhoneNumber" class="control-label"></label>
+                <input asp-for="@Model.User.PhoneNumber" readonly class="form-control" />
+            </div>
+        </form>
+
+
+    </div>
+</div>
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.id" class="btn btn-warning form-group">Edit</a>
+    <a asp-action="AddProperty" asp-route-id="@Model.id" class="btn btn-primary form-group">Add Property</a>
+    <a asp-action="Index" class="btn btn-success form-group">Back to List</a>
+</div>
+@if (Model.Properties.Count == 0)
+{
+    <h5>Not properties added yet.</h5>
+}
+else
+{
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Properties.FirstOrDefault().Neighborhood)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Properties.FirstOrDefault().Address)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Properties.FirstOrDefault().Price)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Properties.FirstOrDefault().SquareMeters)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Properties.FirstOrDefault().Rooms)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Properties.FirstOrDefault().IsAvailable)
+                </th>
+                <th>
+                    Images
+                </th>
+                <th>
+                    Contracts
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Properties)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Neighborhood)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Address)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Price)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.SquareMeters)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Rooms)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.IsAvailable)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.PropertyImages.Count)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Contracts.Count)
+                    </td>
+                    <td>
+                        <a asp-action="EditProperty" asp-route-id="@item.Id" class="btn btn-warning btn-sm form-group">Edit</a>
+                        <a asp-action="DetailsProperty" asp-route-id="@item.Id" class="btn btn-info btn-sm form-group">Details</a>
+                        <a asp-action="DeleteProperty" asp-route-id="@item.Id" class="btn btn-danger btn-sm form-group">Delete</a>
+                    </td>
+                    <td></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
