@@ -59,10 +59,12 @@ namespace MyLeasing.web
             //AddSinglenton se ejecuta una sola vez y crea un objeto que se almacena en memoria y el mismo
             //es utilizado cada ves que se implemente a diferencia del scoped que crea uno por cada petición.
             //y ocupa mas memoria.
+            //se inyectan todas las clases para que puedan ser usada en cualquier parte del proyecto.
             services.AddTransient<SeeDb>();
             services.AddScoped<IUserHelper, UserHelper>();
             services.AddScoped<ICombosHelper, CombosHelper > ();
             services.AddScoped<IConverterHelper, ConverterHelper>();
+            services.AddScoped<IImageHelper, ImageHelper>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }

@@ -23,5 +23,7 @@
     <Folder Include="Helpers\" />
     <Folder Include="Views\Account\" />
     <Folder Include="Views\Owners\" />
+    <Folder Include="wwwroot\images\" />
+    <Folder Include="wwwroot\images\properties\" />
   </ItemGroup>
 </Project>
