@@ -177,7 +177,8 @@ namespace MyLeasing.web.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Owners",new { id = owner.id });
+
             }
             return View(owner);
         }
@@ -247,7 +248,9 @@ namespace MyLeasing.web.Controllers
                 _dataContext.Properties.Add(property);
                 await _dataContext.SaveChangesAsync();
 
-                return RedirectToAction($"Details/{model.OwnerId}");
+                //return RedirectToAction($"Details/{model.OwnerId}");
+                return RedirectToAction("Details", "Owners", new { id = model.OwnerId });
+
             }
 
             model.PropertyTypes = _combosHelper.GetComboPropertyTypes();
@@ -401,7 +404,9 @@ namespace MyLeasing.web.Controllers
 
                 _dataContext.PropertyImages.Add(propertyImage);
                 await _dataContext.SaveChangesAsync();
-                return RedirectToAction($"{nameof(DetailsProperty)}/{model.Id}");
+                //return RedirectToAction($"{nameof(DetailsProperty)}/{model.Id}");
+                return RedirectToAction("DetailsProperty", "Owners", new { id = model.Id });
+
             }
 
             return View(model);
